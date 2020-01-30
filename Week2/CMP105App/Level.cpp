@@ -21,12 +21,60 @@ Level::Level(sf::RenderWindow* hwnd, Input* in)
 	mousePosY.setFillColor(sf::Color::Yellow);
 	mousePosY.setPosition(0, 30);
 
+	circle.setRadius(20);
+	circle.setFillColor(sf::Color::Red);
+	circle.setPosition(-50, -50); //so it starts off the screen
 
 }
 
 Level::~Level()
 {
 	input = nullptr;
+}
+
+void Level::leftClick()
+{
+	if (pressed == false)
+	{
+		if (input->isMouseLDown() == true)
+		{
+			mouseX1 = input->getMouseX();
+			mouseY1 = input->getMouseY();
+			pressed = true;
+			cout << "X1: " << mouseX1 << " Y1: " << mouseY1 << endl;
+		}
+	}
+	if (pressed == true)
+	{
+		if (input->isMouseLDown() == false)
+		{
+			mouseX2 = input->getMouseX();
+			mouseY2 = input->getMouseY();
+			cout << "X2: " << mouseX2 << " Y2: " << mouseY2 << endl;
+			pressed = false;
+			//outputs the distance between where the mouse was clicked and released to the console window
+			cout << pythagoras(mouseX1, mouseY1, mouseX2, mouseY2);
+		}
+	}
+}
+
+void Level::rightClick(sf::CircleShape& circle)
+{
+	if (pressedR == false)
+	{
+		if (input->isMouseRDown() == true)
+		{
+			circle.setPosition(input->getMouseX(), input->getMouseY());
+			pressedR = true;
+		}
+	}
+	if (pressedR == true)
+	{
+		if (input->isMouseRDown() == false)
+		{
+			pressedR = false;
+		}
+	}
 }
 
 // handle user input
@@ -50,15 +98,19 @@ void Level::handleInput()
 	if (input->isKeyDown(sf::Keyboard::Escape))
 		window->close();
 
+	//displays mouse postion
 	std::string output("X: ");
 	output += std::to_string(input->getMouseX());
-
-	mousePosX.setString(output);
+	mousePosX.setString(output); // turns mouse position into a std string before converting it to a sf string that can be rendered
 
 	std::string outputY("Y: ");
 	outputY += std::to_string(input->getMouseY());
-
 	mousePosY.setString(outputY);
+
+	//only checks for the left mouse being down while it hasn't been pressed and vice versa
+	leftClick();
+	//put in a seperate function to de-clutter input function
+	rightClick(circle);
 }
 
 // Update game objects
@@ -74,6 +126,7 @@ void Level::render()
 
 	window->draw(mousePosX);
 	window->draw(mousePosY);
+	window->draw(circle);
 
 	endDraw();
 }
@@ -88,4 +141,13 @@ void Level::beginDraw()
 void Level::endDraw()
 {
 	window->display();
+}
+
+//uses pythagoras to calculate the distance between the two points
+double Level::pythagoras(int X1, int Y1, int X2, int Y2)
+{
+	double X3 = pow((X1 - X2), 2);
+	double Y3 = pow((Y1 - Y2), 2);
+	double distance = sqrt(Y3 + X3);
+	return distance;
 }
